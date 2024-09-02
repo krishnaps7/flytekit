@@ -9,11 +9,8 @@ from kubernetes import client as k8s_client
 
 @dataclass
 class Job:
-    """
-    This class defines the custom options available for a Job task.
-    """
-    job_spec: k8s_client.V1Job
-    metadata: Optional[k8s_client.V1ObjectMeta] = None
+    job_spec: Dict[str, Any]
+    metadata: Optional[Dict[str, Any]] = None
 
     def __post_init__(self):
         if not self.job_spec:
@@ -30,17 +27,47 @@ class JobFunctionTask(PythonFunctionTask[Job]):
         self.namespace = namespace
 
     def get_custom(self, settings: SerializationSettings) -> Optional[Dict[str, Any]]:
-        # Serialize the job spec to a dictionary
-        job_dict = self.task_config.job_spec.to_dict()
-
-        # Add metadata if it exists
+        job_dict = self.task_config.job_spec
         if self.task_config.metadata:
-            job_dict['metadata'] = self.task_config.metadata.to_dict()
-
+            job_dict['metadata'] = self.task_config.metadata
         return job_dict
 
-# Register the custom task plugin
-TaskPlugins.register_pythontask_plugin(Job, JobFunctionTask)
+TaskPlugins.register_pythontask_plugin(Job, JobFunctionTask)     
+  
+# @dataclass
+# class Job:
+#     """
+#     This class defines the custom options available for a Job task.
+#     """
+#     job_spec: k8s_client.V1JobSpec
+#     metadata: Optional[k8s_client.V1ObjectMeta] = None
+
+#     def __post_init__(self):
+#         if not self.job_spec:
+#             raise _user_exceptions.FlyteValidationException("A job spec cannot be undefined")
+
+# class JobFunctionTask(PythonFunctionTask[Job]):
+#     def __init__(self, task_config: Job, task_function: Callable, namespace: str = "default", **kwargs):
+#         super(JobFunctionTask, self).__init__(
+#             task_config=task_config,
+#             task_type="job",
+#             task_function=task_function,
+#             **kwargs
+#         )
+#         self.namespace = namespace
+
+#     def get_custom(self, settings: SerializationSettings) -> Optional[Dict[str, Any]]:
+#         # Serialize the job spec to a dictionary
+#         job_dict = self.task_config.job_spec.to_dict()
+
+#         # Add metadata if it exists
+#         if self.task_config.metadata:
+#             job_dict['metadata'] = self.task_config.metadata.to_dict()
+
+#         return job_dict
+
+# # Register the custom task plugin
+# TaskPlugins.register_pythontask_plugin(Job, JobFunctionTask)
 
 # from dataclasses import dataclass
 # from typing import Callable, Dict, Optional
